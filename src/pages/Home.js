@@ -1,9 +1,9 @@
 import "./Home.css";
 import Header from "../components/Header";
-import OrderCard from "../components/OrderCard";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { socket } from "../Socket";
 import Pagination from "@mui/material/Pagination";
+const OrderCard = lazy(() => import("../components/OrderCard"));
 
 function Home() {
   const [height, setHeight] = useState(0);
@@ -57,10 +57,10 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    if(localStorage.getItem("maxWaitingTime")){
+    if (localStorage.getItem("maxWaitingTime")) {
       setMaxWaitingTime(localStorage.getItem("maxWaitingTime"));
     }
-  }, [])
+  }, []);
 
   function handleResize() {
     if (mainContentRef.current) {
@@ -107,15 +107,17 @@ function Home() {
               cardsPerRow * currentPage - cardsPerRow,
               cardsPerRow * currentPage
             )
-            .map((orderData) => {
+            .map((orderData, index) => {
               return (
-                <OrderCard
-                  key={orderData.orderNum}
-                  height={height}
-                  orderData={orderData}
-                  socket={socket}
-                  maxWaitingTime={maxWaitingTime}
-                />
+                <Suspense key={index} fallback={<div>Loading...</div>}>
+                  <OrderCard
+                    key={orderData.orderNum}
+                    height={height}
+                    orderData={orderData}
+                    socket={socket}
+                    maxWaitingTime={maxWaitingTime}
+                  />
+                </Suspense>
               );
             })}
         </div>
